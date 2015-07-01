@@ -28,47 +28,42 @@ function apiCall($apiCall, $site, $filter) {
 	return $result;
 }
 
-function fetchQuestion($qid) {
+function fetchQuestion($qid, $db) {
 	$filter = "!)rcjzniPuafk4WNG65yr";
 	$data = apiCall("questions/$qid?order=desc&sort=activity", 'codereview', $filter);
 	$json = json_decode($data, true);
-	var_dump($json);
+	$question = $json['items'][0];
+	$dbfields = array("is_answered", "view_count", "favorite_count", "answer_count", "score");
+	
+	
+	$sql = 'INSERT INTO cr_badge (question_id, is_answered, favorite_count, answer_count, view_count, score, fetch_time) ' .
+		'VALUES (:qid, :is_answered, :favorite_count, :answer_count, :view_count, :score, :time) ON DUPLICATE KEY UPDATE ' .
+		'is_answered = :is_answered, favorite_count = :favorite_count, answer_count = :answer_count, view_count = :view_count, score = :score, fetch_time = :time ;';
+	$stmt = $db->prepare($sql);
+	$sql_params = array();
+	foreach ($dbfields as $field_name) {
+		$sql_params[':' . $field_name] = $question[$field_name];
+	}
+	$sql_params[':qid'] = $qid;
+	$sql_params[':time'] = time();
+	$result = $stmt->execute($sql_params);
+	if ($result) {
+		useData($question);
+	} else {
+		print_r($stmt->errorInfo());
+	}
+
+	
 	return $json;
 }
 
-fetchQuestion(79408);
-
-//header('Content-type: image/svg+xml; charset=utf-8');
-
-/*try {
-    $db = new PDO($dsn, $user, $password);
-} catch (PDOException $e) {
-    echo 'Connection failed: ' . $e->getMessage();
-}*/
-
-if (isset($_GET['qid'])) {
-	$qid = $_GET['qid'];
-	
-/*	$sql = 'INSERT INTO cr_badge (question_id, is_answered, favorite_count, answer_count, view_count, score, fetch_time) ' .
-		'VALUES (:qid, :is_answered, :favorite_count, :answer_count, :view_count, :score, :time);';
-	$stmt = $db->prepare($sql);
-	$result = $stmt->execute(array(':qid' => $qid, ':is_answered' => $is_answered));
-	if ($result) {
-		echo "OK";
-	} else {
-		echo "failed";
-		print_r($stmt->errorInfo());
-	}*/
-} else {
-	echo "invalid";
-}
-
-
-
-function reviewed_answers_green() {
-	$answers = $_GET['answers'];
-	$text = $_GET['text'];
-    return <<<END
+function useData($data) {
+	header('Content-type: image/svg+xml; charset=utf-8');
+	$score = $data['score'];
+	$is_answered = $data['text'];
+	$text = 'reviewed';
+	$right = $score;
+    $svg = <<<END
 <svg xmlns="http://www.w3.org/2000/svg" width="137" height="20">
 <linearGradient id="b" x2="0" y2="100%">
 <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
@@ -85,11 +80,45 @@ function reviewed_answers_green() {
 <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
 <text x="31" y="15" fill="#010101" fill-opacity=".3">$text</text>
 <text x="31" y="14">$text</text>
-<text x="98.5" y="15" fill="#010101" fill-opacity=".3">$answers</text>
-<text x="98.5" y="14">$answers</text>
+<text x="98.5" y="15" fill="#010101" fill-opacity=".3">$right</text>
+<text x="98.5" y="14">$right</text>
 </g>
 </svg>
 END;
+	echo $svg;
 }
 
-//echo reviewed_answers_green();
+function dbOrAPI($qid, $db) {
+	
+	$sql = 'SELECT is_answered, favorite_count, answer_count, view_count, score, fetch_time FROM cr_badge WHERE question_id = :qid;';
+
+	$stmt = $db->prepare($sql);
+	$result = $stmt->execute(array(':qid' => $qid));
+	if ($result) {
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		$time = $row['fetch_time'];
+		if ($time < time() - 3600) { // if time was updated more than one hour ago
+			// fetch data again
+			fetchQuestion($qid, $db);
+		} else {
+			useData($row);
+		}
+	} else {
+		print_r($stmt->errorInfo());
+	}
+}
+
+if (isset($_GET['qid'])) {
+	$qid = $_GET['qid'];
+} else {
+	die("No qid set");
+}
+
+try {
+	$db = new PDO($dbhostname, $dbuser, $dbpass);
+} catch (PDOException $e) {
+	echo 'Connection failed: ' . $e->getMessage();
+	return false;
+}
+
+dbOrAPI($qid, $db);
