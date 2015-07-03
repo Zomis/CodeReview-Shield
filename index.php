@@ -59,8 +59,6 @@ function fetchQuestion($qid, $db) {
 }
 
 function useData($data) {
-	header('Content-type: image/svg+xml; charset=utf-8');
-	$is_answered = $data['text'];
 	$text = 'reviewed';
 	if (isset($data['accepted_answer_id']) && $data['accepted_answer_id'] != 0) {
 		$color = '97ca00';
@@ -80,6 +78,12 @@ function useData($data) {
 	$data['answers'] = $data['answer_count'];
 	$data['views'] = $data['view_count'];
 	$right = $data[$mode] . ' ' . $mode;
+
+	header('Content-type: image/svg+xml; charset=utf-8');
+	header('Cache-Control: no-cache, private');
+	header('Vary: Accept');
+	$etag = $mode . $color . $data[$mode];
+	header('Etag: "' . $etag . '"');
 	
 	$svg = <<<END
 <svg xmlns="http://www.w3.org/2000/svg" width="137" height="20">
