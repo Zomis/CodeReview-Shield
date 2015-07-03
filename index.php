@@ -53,10 +53,8 @@ function fetchQuestion($qid, $db) {
 	if ($result) {
 		useData($question);
 	} else {
-		print_r($stmt->errorInfo());
+		die($stmt->errorInfo());
 	}
-
-	
 	return $json;
 }
 
