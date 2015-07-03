@@ -4,7 +4,7 @@ require 'conf.php';
 
 function buildURL($apiCall, $site, $filter, $apiKey) {
 	if (strpos($apiCall, '?') === false) {
-		$apiCall = $apiCall + "?dummy";
+		$apiCall .= "?dummy";
 	}
 	return "https://api.stackexchange.com/2.2/" . $apiCall
 				. "&site=" . $site
