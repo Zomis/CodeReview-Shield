@@ -62,11 +62,28 @@ function fetchQuestion($qid, $db) {
 
 function useData($data) {
 	header('Content-type: image/svg+xml; charset=utf-8');
-	$score = $data['score'];
 	$is_answered = $data['text'];
 	$text = 'reviewed';
-	$right = $score;
-    $svg = <<<END
+	if (isset($data['accepted_answer_id']) && $data['accepted_answer_id'] != 0) {
+		$color = '97ca00';
+		$mode = 'views';
+	} elseif ($data['answer_count'] >= 1) {
+		$color = 'ff8000';
+		$right = $data['score'] . ' score';
+		$mode = 'answers';
+	} else {
+		$color = 'e05d44';
+		$text = 'reviewing';
+		$mode = 'score';
+	}
+	if (isset($_GET['mode'])) {
+		$mode = $_GET['mode'];
+	}
+	$data['answers'] = $data['answer_count'];
+	$data['views'] = $data['view_count'];
+	$right = $data[$mode] . ' ' . $mode;
+	
+	$svg = <<<END
 <svg xmlns="http://www.w3.org/2000/svg" width="137" height="20">
 <linearGradient id="b" x2="0" y2="100%">
 <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
@@ -77,7 +94,7 @@ function useData($data) {
 </mask>
 <g mask="url(#a)">
 <path fill="#555" d="M0 0h62v20H0z"/>
-<path fill="#e05d44" d="M62 0h75v20H62z"/>
+<path fill="#$color" d="M62 0h75v20H62z"/>
 <path fill="url(#b)" d="M0 0h137v20H0z"/>
 </g>
 <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
