@@ -41,7 +41,11 @@ function fetchQuestion($qid, $db) {
 	$stmt = $db->prepare($sql);
 	$sql_params = array();
 	foreach ($dbfields as $field_name) {
-		$sql_params[':' . $field_name] = $question[$field_name];
+		if (isset($question[$field_name])) {
+			$sql_params[':' . $field_name] = $question[$field_name];
+		} else {
+			$sql_params[':' . $field_name] = 0;
+		}
 	}
 	$sql_params[':qid'] = $qid;
 	$sql_params[':time'] = time();
