@@ -33,12 +33,11 @@ function fetchQuestion($qid, $db) {
 	$data = apiCall("questions/$qid?order=desc&sort=activity", 'codereview', $filter);
 	$json = json_decode($data, true);
 	$question = $json['items'][0];
-	$dbfields = array("is_answered", "view_count", "favorite_count", "answer_count", "score");
+	$dbfields = array("is_answered", "view_count", "favorite_count", "answer_count", "score", "accepted_answer_id");
 	
-	
-	$sql = 'INSERT INTO cr_badge (question_id, is_answered, favorite_count, answer_count, view_count, score, fetch_time) ' .
-		'VALUES (:qid, :is_answered, :favorite_count, :answer_count, :view_count, :score, :time) ON DUPLICATE KEY UPDATE ' .
-		'is_answered = :is_answered, favorite_count = :favorite_count, answer_count = :answer_count, view_count = :view_count, score = :score, fetch_time = :time ;';
+	$sql = 'INSERT INTO cr_badge (question_id, is_answered, favorite_count, answer_count, view_count, score, fetch_time, accepted_answer_id) ' .
+		'VALUES (:qid, :is_answered, :favorite_count, :answer_count, :view_count, :score, :time, :accepted_answer_id) ON DUPLICATE KEY UPDATE ' .
+		'is_answered = :is_answered, favorite_count = :favorite_count, answer_count = :answer_count, view_count = :view_count, score = :score, fetch_time = :time, accepted_answer_id = :accepted_answer_id ;';
 	$stmt = $db->prepare($sql);
 	$sql_params = array();
 	foreach ($dbfields as $field_name) {
@@ -90,7 +89,7 @@ END;
 
 function dbOrAPI($qid, $db) {
 	
-	$sql = 'SELECT is_answered, favorite_count, answer_count, view_count, score, fetch_time FROM cr_badge WHERE question_id = :qid;';
+	$sql = 'SELECT is_answered, favorite_count, answer_count, view_count, score, fetch_time, accepted_answer_id FROM cr_badge WHERE question_id = :qid;';
 
 	$stmt = $db->prepare($sql);
 	$result = $stmt->execute(array(':qid' => $qid));
