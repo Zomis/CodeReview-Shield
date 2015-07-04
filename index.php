@@ -32,6 +32,10 @@ function fetchQuestion($qid, $db) {
 	$filter = "!)rcjzniPuafk4WNG65yr";
 	$data = apiCall("questions/$qid?order=desc&sort=activity", 'codereview', $filter);
 	$json = json_decode($data, true);
+	$items = $json['items'];
+	if (count($items) == 0) {
+		return showError('Question ' . $qid . ' not found');
+	}
 	$question = $json['items'][0];
 	$dbfields = array("is_answered", "view_count", "favorite_count", "answer_count", "score", "accepted_answer_id");
 	
@@ -110,14 +114,44 @@ END;
 	echo $svg;
 }
 
+function showError($message) {
+	header('Content-type: image/svg+xml; charset=utf-8');
+	header('Cache-Control: no-cache, private');
+	header('Vary: Accept');
+	$etag = md5($message);
+	header('Etag: "' . $etag . '"');
+	
+	$svg = <<<END
+<svg xmlns="http://www.w3.org/2000/svg" width="137" height="20">
+	<mask id="a">
+		<rect width="137" height="20" rx="3" fill="#fff"/>
+	</mask>
+	<g mask="url(#a)">
+		<path fill="#555" d="M0 0h137v20H0z"/>
+	</g>
+	<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+		<text x="68" y="15" fill="#010101" fill-opacity=".3">$message</text>
+		<text x="68" y="14">$message</text>
+	</g>
+</svg>
+END;
+	echo $svg;
+}
+
 function dbOrAPI($qid, $db) {
 	
-	$sql = 'SELECT is_answered, favorite_count, answer_count, view_count, score, fetch_time, accepted_answer_id FROM cr_badge WHERE question_id = :qid;';
+	$sql = 'SELECT is_answered, favorite_count, answer_count, view_count, score, fetch_time, accepted_answer_id, question_id FROM cr_badge WHERE question_id = :qid;';
 
 	$stmt = $db->prepare($sql);
 	$result = $stmt->execute(array(':qid' => $qid));
 	if ($result) {
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		if (!$row) {
+			return showError('Invalid Question');
+		}
+		if (!$row['question_id']) {
+			return showError('Invalid qid ' . $row['question_id']);
+		}
 		$time = $row['fetch_time'];
 		if ($time < time() - 3600) { // if time was updated more than one hour ago
 			// fetch data again
@@ -126,21 +160,18 @@ function dbOrAPI($qid, $db) {
 			useData($row);
 		}
 	} else {
-		print_r($stmt->errorInfo());
+		return showError($stmt->errorInfo());
 	}
 }
 
 if (isset($_GET['qid'])) {
 	$qid = $_GET['qid'];
+	try {
+		$db = new PDO($dbhostname, $dbuser, $dbpass);
+		dbOrAPI($qid, $db);
+	} catch (PDOException $e) {
+		showError($e->getMessage());
+	}
 } else {
-	die("No qid set");
+	showError('No qid set');
 }
-
-try {
-	$db = new PDO($dbhostname, $dbuser, $dbpass);
-} catch (PDOException $e) {
-	echo 'Connection failed: ' . $e->getMessage();
-	return false;
-}
-
-dbOrAPI($qid, $db);
