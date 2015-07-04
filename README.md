@@ -10,6 +10,8 @@ Add this to your GitHub repository `README.md` file, or anywhere else that suppo
 
 Replace `qqqqq` with the question id and `uuuuuuu` with your user id.
 
+The quickest way to create your shield is to use the [Code Review Shield creator](http://www.zomis.net/codereview/shield/create.html) and paste the 'share' link for your question.
+
 # Modes
 
 By default, the shield decides the mode depending on the status of the question.

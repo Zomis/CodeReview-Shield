@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Make your own Code Review Shield</title>
+	</head>
+	<body>
+		<p>
+			Convert the 'share' link to a Code Review Shield.
+			Input something like
+			<pre>http://codereview.stackexchange.com/q/95459/31562</pre>
+		</p>
+		<h3>Enter share link:</h3>
+		<input id="shareLink" type="text" onkeypress="createShield()" onkeyup="createShield()" size="70" />
+		<script>
+			function createShield(event) {
+				var shareLink = document.getElementById('shareLink');
+				var output = document.getElementById('output');
+
+				var pattern = /\/q\/(\d+)\/(\d+)/g;
+				var match = pattern.exec(shareLink.value);
+				if (match) {
+					var qid = match[1];
+					var userid = match[2];
+					output.value = '[![Code Review](http://www.zomis.net/codereview/shield/?qid=' + qid + ')](http://codereview.stackexchange.com/q/' + qid + '/' + userid + ')';
+				} else {
+					output.value = 'Waiting for valid input that matches ' + pattern;
+				}
+			}
+		</script>
+		<h4>Resulting Code Review Shield markdown:</h4>
+		<div>
+			<input type="text" id="output" size="70" />
+		</div>
+	</body>
+</html>
