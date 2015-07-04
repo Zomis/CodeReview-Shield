@@ -147,10 +147,10 @@ function dbOrAPI($qid, $db) {
 	if ($result) {
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		if (!$row) {
-			return showError('Invalid Question');
+			return fetchQuestion($qid, $db);
 		}
 		if (!$row['question_id']) {
-			return showError('Invalid qid ' . $row['question_id']);
+			return fetchQuestion($qid, $db);
 		}
 		$time = $row['fetch_time'];
 		if ($time < time() - 3600) { // if time was updated more than one hour ago
