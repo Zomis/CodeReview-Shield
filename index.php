@@ -87,24 +87,24 @@ function useData($data) {
 	
 	$svg = <<<END
 <svg xmlns="http://www.w3.org/2000/svg" width="137" height="20">
-<linearGradient id="b" x2="0" y2="100%">
-<stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-<stop offset="1" stop-opacity=".1"/>
-</linearGradient>
-<mask id="a">
-<rect width="137" height="20" rx="3" fill="#fff"/>
-</mask>
-<g mask="url(#a)">
-<path fill="#555" d="M0 0h62v20H0z"/>
-<path fill="#$color" d="M62 0h75v20H62z"/>
-<path fill="url(#b)" d="M0 0h137v20H0z"/>
-</g>
-<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-<text x="31" y="15" fill="#010101" fill-opacity=".3">$text</text>
-<text x="31" y="14">$text</text>
-<text x="98.5" y="15" fill="#010101" fill-opacity=".3">$right</text>
-<text x="98.5" y="14">$right</text>
-</g>
+	<linearGradient id="b" x2="0" y2="100%">
+		<stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+		<stop offset="1" stop-opacity=".1"/>
+	</linearGradient>
+	<mask id="a">
+		<rect width="137" height="20" rx="3" fill="#fff"/>
+	</mask>
+	<g mask="url(#a)">
+		<path fill="#555" d="M0 0h62v20H0z"/>
+		<path fill="#$color" d="M62 0h75v20H62z"/>
+		<path fill="url(#b)" d="M0 0h137v20H0z"/>
+	</g>
+	<g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+		<text x="31" y="15" fill="#010101" fill-opacity=".3">$text</text>
+		<text x="31" y="14">$text</text>
+		<text x="98.5" y="15" fill="#010101" fill-opacity=".3">$right</text>
+		<text x="98.5" y="14">$right</text>
+	</g>
 </svg>
 END;
 	echo $svg;
