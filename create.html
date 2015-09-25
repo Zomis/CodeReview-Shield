@@ -15,6 +15,7 @@
 			function createShield(event) {
 				var shareLink = document.getElementById('shareLink');
 				var output = document.getElementById('output');
+				var outputHtml = document.getElementById('output-html');
 
 				var pattern = /\/q\/(\d+)\/(\d+)/g;
 				var match = pattern.exec(shareLink.value);
@@ -22,14 +23,21 @@
 					var qid = match[1];
 					var userid = match[2];
 					output.value = '[![Code Review](http://www.zomis.net/codereview/shield/?qid=' + qid + ')](http://codereview.stackexchange.com/q/' + qid + '/' + userid + ')';
+					outputHtml.value = '<a href="http://codereview.stackexchange.com/q/' + qid + '/' +
+                        userid + '"><img src="http://www.zomis.net/codereview/shield/?qid=' + qid + '" alt="See question #' + qid + ' on Code Review" /></a>';
 				} else {
 					output.value = 'Waiting for valid input that matches ' + pattern;
+					outputHtml.value = 'Waiting for valid input that matches ' + pattern;
 				}
 			}
 		</script>
 		<h4>Resulting Code Review Shield markdown:</h4>
 		<div>
 			<input type="text" id="output" size="70" />
+		</div>
+		<h4>Resulting Code Review Shield HTML:</h4>
+		<div>
+			<input type="text" id="output-html" size="70" />
 		</div>
 	</body>
 </html>
